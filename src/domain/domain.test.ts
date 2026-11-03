@@ -154,3 +154,26 @@ describe('import/export', () => {
     expect(parseProject('{"schemaVersion":2}').ok).toBe(false);
   });
 });
+
+describe('platform kit', () => {
+  it('flags insecure MCP, vault and orphan RAG nodes', () => {
+    const base = createStarterProject();
+    const mk = (id: string, kind: any, config: any) => ({ id, kind, name: id, position: { x: 0, y: 0 }, config });
+    const p: GnikProject = {
+      ...base,
+      graph: {
+        edges: [],
+        nodes: [
+          ...base.graph.nodes,
+          mk('m', 'mcp_server', { replicasMin: 1, replicasMax: 2, cpu: 0.5, memoryGiB: 1, authentication: 'none', ingress: 'public' }),
+          mk('k', 'key_vault', { publicAccess: true, rotationDays: 90 }),
+          mk('r', 'rag_service', { replicasMin: 1, replicasMax: 2, cpu: 1, memoryGiB: 2, topK: 5, chunkSize: 512 }),
+        ],
+      },
+    };
+    const codes = run(p).f.map((x) => x.code);
+    expect(codes).toContain('MCP_NO_AUTH');
+    expect(codes).toContain('VAULT_PUBLIC');
+    expect(codes).toContain('RAG_NO_VECTOR_STORE');
+  });
+});

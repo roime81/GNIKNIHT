@@ -80,11 +80,24 @@ export function validateProject(project: GnikProject, resolved: ResolvedProject)
       add({ severity: 'error', code: 'MODEL_RESTRICTED_PRIVATE', message: `${node.name} handles restricted data and requires a private endpoint on an approved provider profile.`, nodeIds: [node.id], remediation: 'Enable the private endpoint and use the mock-paas provider.' });
     }
 
+    if (node.kind === 'mcp_server' && c.authentication === 'none' && c.ingress === 'public') {
+      add({ severity: 'error', code: 'MCP_NO_AUTH', message: `${node.name}: a public MCP server must require authentication.`, nodeIds: [node.id], remediation: 'Set authentication to required or ingress to internal.' });
+    }
+    if (node.kind === 'key_vault' && c.publicAccess === true) {
+      add({ severity: 'error', code: 'VAULT_PUBLIC', message: `${node.name}: a key vault must not be publicly reachable.`, nodeIds: [node.id], remediation: 'Disable public access.' });
+    }
+    if (node.kind === 'identity_provider' && prod && c.mfa !== true) {
+      add({ severity: 'error', code: 'PROD_SSO_MFA', message: `${node.name}: production SSO must require MFA.`, nodeIds: [node.id], remediation: 'Enable MFA.' });
+    }
+    if (node.kind === 'rag_service' && !project.graph.edges.some((e) => e.source === node.id && project.graph.nodes.find((n) => n.id === e.target)?.kind === 'vector_store')) {
+      add({ severity: 'warning', code: 'RAG_NO_VECTOR_STORE', message: `${node.name} has no connection to a vector store.`, nodeIds: [node.id], idSuffix: node.id, remediation: 'Connect the RAG service to a vector store.' });
+    }
+
     if (prod) {
       if (def.stateless && min !== undefined && min < 2 && c.productionExempt !== true) {
         add({ severity: 'error', code: 'PROD_REPLICAS', message: `${node.name}: Production requires at least 2 replicas (currently ${min}).`, nodeIds: [node.id], remediation: 'Raise min replicas to 2 or more.' });
       }
-      if (node.kind === 'postgres') {
+      if (node.kind === 'postgres' || node.kind === 'sqlite') {
         if (c.backup !== true) add({ severity: 'error', code: 'PROD_DB_BACKUP', message: `${node.name}: production databases must have backups enabled.`, nodeIds: [node.id], remediation: 'Enable backups.' });
       }
     }

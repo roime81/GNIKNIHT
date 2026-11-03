@@ -1,6 +1,6 @@
 import type { CapabilityKind, ConfigValue, NodeConfig, Relation } from './types';
 
-export type Category = 'Compute' | 'Data' | 'Integration' | 'AI' | 'External';
+export type Category = 'Compute' | 'Data' | 'Integration' | 'AI' | 'Security' | 'Platform' | 'External';
 
 export interface FieldDef {
   key: string;
@@ -139,6 +139,106 @@ export const CATALOG: Record<CapabilityKind, CapabilityDef> = {
     ],
     implementation: 'Private Model Endpoint', stateless: false, dataBearing: true, baseCost: 80,
   },
+  sqlite: {
+    kind: 'sqlite', label: 'SQLite / libSQL', category: 'Data', description: 'Lightweight embedded open-source RDBMS',
+    defaults: { engine: 'sqlite', storageGiB: 5, backup: true, encryptionAtRest: true, publicAccess: false },
+    fields: [
+      { key: 'engine', label: 'Engine', type: 'select', options: ['sqlite', 'libsql', 'mariadb'] },
+      { key: 'storageGiB', label: 'Storage (GiB)', type: 'number', min: 1, max: 1024 },
+      { key: 'backup', label: 'Backups', type: 'boolean' },
+      { key: 'encryptionAtRest', label: 'Encryption at rest', type: 'boolean' },
+      { key: 'publicAccess', label: 'Public endpoint', type: 'boolean' },
+    ],
+    implementation: 'Lightweight Relational DB', stateless: false, dataBearing: true, baseCost: 8,
+  },
+  analytics_db: {
+    kind: 'analytics_db', label: 'Analytics DB', category: 'Data', description: 'Open-source OLAP store (DuckDB / ClickHouse)',
+    defaults: { engine: 'duckdb', tier: 'small', storageGiB: 50, encryptionAtRest: true, publicAccess: false },
+    fields: [
+      { key: 'engine', label: 'Engine', type: 'select', options: ['duckdb', 'clickhouse'] },
+      { key: 'tier', label: 'Tier', type: 'select', options: ['small', 'medium', 'large'] },
+      { key: 'storageGiB', label: 'Storage (GiB)', type: 'number', min: 1, max: 16384 },
+      { key: 'encryptionAtRest', label: 'Encryption at rest', type: 'boolean' },
+      { key: 'publicAccess', label: 'Public endpoint', type: 'boolean' },
+    ],
+    implementation: 'Managed Analytics DB', stateless: false, dataBearing: true, baseCost: 35,
+  },
+  vector_store: {
+    kind: 'vector_store', label: 'Vector store', category: 'AI', description: 'Embedding index for RAG (pgvector / Qdrant)',
+    defaults: { engine: 'pgvector', dimensions: 768, storageGiB: 10, encryptionAtRest: true, publicAccess: false },
+    fields: [
+      { key: 'engine', label: 'Engine', type: 'select', options: ['pgvector', 'qdrant', 'chroma'] },
+      { key: 'dimensions', label: 'Dimensions', type: 'number', min: 8, max: 4096 },
+      { key: 'storageGiB', label: 'Storage (GiB)', type: 'number', min: 1, max: 4096 },
+      { key: 'encryptionAtRest', label: 'Encryption at rest', type: 'boolean' },
+      { key: 'publicAccess', label: 'Public endpoint', type: 'boolean' },
+    ],
+    implementation: 'Managed Vector Store', stateless: false, dataBearing: true, baseCost: 25,
+  },
+  rag_service: {
+    kind: 'rag_service', label: 'RAG service', category: 'AI', description: 'Retrieval-augmented generation pipeline',
+    defaults: { replicasMin: 1, replicasMax: 3, cpu: 1, memoryGiB: 2, topK: 5, chunkSize: 512, ingress: 'internal' },
+    fields: [...replicas,
+      { key: 'topK', label: 'Top-K', type: 'number', min: 1, max: 100 },
+      { key: 'chunkSize', label: 'Chunk size (tokens)', type: 'number', min: 64, max: 8192 },
+      ingress],
+    implementation: 'Managed RAG Pipeline', stateless: true, dataBearing: false, baseCost: 30,
+  },
+  mcp_server: {
+    kind: 'mcp_server', label: 'MCP server', category: 'AI', description: 'Model Context Protocol tool/resource server',
+    defaults: { replicasMin: 1, replicasMax: 3, cpu: 0.5, memoryGiB: 1, transport: 'http', authentication: 'required', ingress: 'internal' },
+    fields: [...replicas,
+      { key: 'transport', label: 'Transport', type: 'select', options: ['http', 'sse', 'stdio'] },
+      { key: 'authentication', label: 'Authentication', type: 'select', options: ['required', 'optional', 'none'] },
+      ingress],
+    implementation: 'Managed MCP Server', stateless: true, dataBearing: false, baseCost: 20,
+  },
+  api_management: {
+    kind: 'api_management', label: 'API management', category: 'Integration', description: 'APIM: keys, quotas, versions, portal (Kong / Tyk)',
+    defaults: { engine: 'kong', ingress: 'public', authentication: 'required', rateLimitPerMinute: 1000, developerPortal: true },
+    fields: [
+      { key: 'engine', label: 'Engine', type: 'select', options: ['kong', 'tyk', 'apisix'] },
+      ingress,
+      { key: 'authentication', label: 'Authentication', type: 'select', options: ['required', 'optional', 'none'] },
+      { key: 'rateLimitPerMinute', label: 'Rate limit / min', type: 'number', min: 1, max: 1000000 },
+      { key: 'developerPortal', label: 'Developer portal', type: 'boolean' },
+    ],
+    implementation: 'Managed API Management', stateless: true, dataBearing: false, baseCost: 25,
+  },
+  identity_provider: {
+    kind: 'identity_provider', label: 'SSO / Identity', category: 'Security', description: 'SSO and authentication (Keycloak / Authentik)',
+    defaults: { engine: 'keycloak', protocol: 'oidc', mfa: true, tier: 'small' },
+    fields: [
+      { key: 'engine', label: 'Engine', type: 'select', options: ['keycloak', 'authentik', 'zitadel'] },
+      { key: 'protocol', label: 'Protocol', type: 'select', options: ['oidc', 'saml'] },
+      { key: 'mfa', label: 'Require MFA', type: 'boolean' },
+      { key: 'tier', label: 'Tier', type: 'select', options: ['small', 'medium', 'large'] },
+    ],
+    implementation: 'Managed Identity Provider', stateless: false, dataBearing: false, baseCost: 20,
+  },
+  key_vault: {
+    kind: 'key_vault', label: 'Key Vault', category: 'Security', description: 'Secrets and key management (OpenBao / Vault)',
+    defaults: { engine: 'openbao', autoUnseal: true, rotationDays: 90, encryptionAtRest: true, publicAccess: false },
+    fields: [
+      { key: 'engine', label: 'Engine', type: 'select', options: ['openbao', 'vault', 'infisical'] },
+      { key: 'autoUnseal', label: 'Auto-unseal', type: 'boolean' },
+      { key: 'rotationDays', label: 'Rotation (days)', type: 'number', min: 1, max: 365 },
+      { key: 'encryptionAtRest', label: 'Encryption at rest', type: 'boolean' },
+      { key: 'publicAccess', label: 'Public endpoint', type: 'boolean' },
+    ],
+    implementation: 'Managed Key Vault', stateless: false, dataBearing: true, baseCost: 15,
+  },
+  iac_pipeline: {
+    kind: 'iac_pipeline', label: 'IaC pipeline', category: 'Platform', description: 'Infrastructure as code runner (OpenTofu / Pulumi)',
+    defaults: { engine: 'opentofu', stateBackend: 'object_storage', driftDetection: true, policyChecks: true },
+    fields: [
+      { key: 'engine', label: 'Engine', type: 'select', options: ['opentofu', 'pulumi', 'ansible'] },
+      { key: 'stateBackend', label: 'State backend', type: 'select', options: ['object_storage', 'postgres', 'local'] },
+      { key: 'driftDetection', label: 'Drift detection', type: 'boolean' },
+      { key: 'policyChecks', label: 'Policy checks', type: 'boolean' },
+    ],
+    implementation: 'IaC Pipeline Runner', stateless: true, dataBearing: false, baseCost: 5,
+  },
   external_system: {
     kind: 'external_system', label: 'External system', category: 'External', description: 'Third-party or on-prem dependency',
     defaults: { systemName: 'External system', trustBoundary: 'external', protocol: 'https' },
@@ -151,9 +251,9 @@ export const CATALOG: Record<CapabilityKind, CapabilityDef> = {
   },
 };
 
-export const CATEGORIES: Category[] = ['Compute', 'Data', 'Integration', 'AI', 'External'];
+export const CATEGORIES: Category[] = ['Compute', 'Data', 'Integration', 'AI', 'Security', 'Platform', 'External'];
 
-export const PRODUCER_KINDS: CapabilityKind[] = ['web_app', 'api_service', 'worker', 'function', 'external_system'];
+export const PRODUCER_KINDS: CapabilityKind[] = ['web_app', 'api_service', 'worker', 'function', 'rag_service', 'mcp_server', 'external_system'];
 export const BROKER_KINDS: CapabilityKind[] = ['event_bus', 'queue'];
 export const CONSUMER_KINDS: CapabilityKind[] = ['worker', 'function'];
 
@@ -177,6 +277,7 @@ export function relationProblem(rel: Relation, source: CapabilityKind, target: C
 
 export function inferRelation(source: CapabilityKind, target: CapabilityKind): Relation {
   if (target === 'model_endpoint') return 'calls_model';
+  if (target === 'identity_provider' || target === 'key_vault' || target === 'iac_pipeline') return 'depends_on';
   if (BROKER_KINDS.includes(target)) return CONSUMER_KINDS.includes(source) ? 'subscribes' : 'publishes';
   if (CATALOG[target].dataBearing) return source === 'worker' ? 'reads' : 'writes';
   if (CATALOG[source].category === 'Compute' || source === 'api_gateway') return 'request';
@@ -200,6 +301,10 @@ export function summaryChips(kind: CapabilityKind, c: NodeConfig): string[] {
     case 'api_gateway': chips.push(String(v('ingress'))); chips.push(`${v('rateLimitPerMinute')}/min`); break;
     case 'model_endpoint': chips.push(v('privateEndpoint') ? 'Private' : 'Public'); chips.push(String(v('dataSensitivity'))); break;
     case 'external_system': chips.push(String(v('trustBoundary'))); break;
+    case 'sqlite': case 'analytics_db': case 'vector_store': case 'api_management': case 'identity_provider': case 'key_vault': case 'iac_pipeline':
+      chips.push(String(v('engine'))); break;
+    case 'rag_service': chips.push(`top-${v('topK')}`); chips.push(String(v('ingress'))); break;
+    case 'mcp_server': chips.push(String(v('transport'))); chips.push(v('authentication') === 'none' ? 'no auth' : 'auth'); break;
   }
   if (c.networkExposure === 'private') chips.push('Private network');
   return chips;

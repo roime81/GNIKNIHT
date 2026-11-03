@@ -13,6 +13,15 @@ export const CAPABILITY_KINDS = [
   'api_gateway',
   'model_endpoint',
   'external_system',
+  'sqlite',
+  'analytics_db',
+  'vector_store',
+  'rag_service',
+  'mcp_server',
+  'api_management',
+  'identity_provider',
+  'key_vault',
+  'iac_pipeline',
 ] as const;
 export const capabilityKindSchema = z.enum(CAPABILITY_KINDS);
 export type CapabilityKind = z.infer<typeof capabilityKindSchema>;

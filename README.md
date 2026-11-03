@@ -19,8 +19,23 @@ GNIKNIHT is a visual-first studio for modelling an application as a **topology o
 
 ## Features
 
-- **Design** — drag or click capabilities from the palette (web app, API service, worker, function, PostgreSQL, object storage, cache, event bus, queue, API gateway, model endpoint, external system), connect them with typed relationships (`request`, `publishes`, `subscribes`, `reads`, `writes`, `depends_on`, `calls_model`), move, multi-select, duplicate, delete, pan/zoom, minimap, undo/redo.
+- **Design** — drag or click capabilities from the palette (web app, API service, worker, function, PostgreSQL, object storage, cache, event bus, queue, API gateway, model endpoint, external system, plus the open-source platform kit below), connect them with typed relationships (`request`, `publishes`, `subscribes`, `reads`, `writes`, `depends_on`, `calls_model`), move, multi-select, duplicate, delete, pan/zoom, minimap, undo/redo.
 - **Inspector** — Overview, Configuration, Connections and **Effective** tabs. The Effective tab shows base vs. resolved values with provenance (base, overlay, platform default, org policy).
+- **Open-source platform kit** — lightweight building blocks, each with an `engine` choice, validation and plan support:
+
+  | Capability | Category | Engines |
+  |---|---|---|
+  | SQLite / libSQL (RDBMS) | Data | sqlite, libsql, mariadb |
+  | Analytics DB | Data | duckdb, clickhouse |
+  | Vector store | AI | pgvector, qdrant, chroma |
+  | RAG service | AI | retrieval pipeline (top-K, chunk size) |
+  | MCP server | AI | http, sse, stdio transports |
+  | API management (APIM) | Integration | kong, tyk, apisix |
+  | SSO / Identity | Security | keycloak, authentik, zitadel |
+  | Key Vault | Security | openbao, vault, infisical |
+  | IaC pipeline | Platform | opentofu, pulumi, ansible |
+
+  Rules: public MCP servers must require auth, key vaults can't be public, production SSO requires MFA, production SQLite needs backups, and a RAG service without a vector store gets a warning.
 - **Overlays** — four demo overlays (Development, Production, Restricted Data, Budget Guardrail), plus your own. Enable/disable, reorder priority, choose targets (all, selected nodes, capability kinds) and edit validated settings. Overlays never mutate the base graph.
 - **Conflicts are explicit** — if two overlays set the same property differently, GNIKNIHT reports a conflict instead of picking a winner. Resolve it by disabling a layer or marking the higher-priority overlay as an override with a reason.
 - **Validation** — "MVP architecture checks" (edge rules, replica/range checks, production and restricted-data rules, HA support, budget, stale targets, conflicts). Each finding has a **Focus** action; **Explain** uses the demo assistant.
