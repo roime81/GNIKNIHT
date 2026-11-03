@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { CheckCircle2, Download, FilePlus2, MoreHorizontal, PanelLeft, Play, Redo2, ShieldCheck, Undo2, Upload, RotateCcw, FileText } from 'lucide-react';
+import { CheckCircle2, Download, FilePlus2, MoreHorizontal, PanelLeft, Play, Redo2, ShieldCheck, Undo2, Upload, RotateCcw, FileText, Boxes } from 'lucide-react';
 import { useStore, type Mode } from '../application/store';
 import { useDerived } from '../application/derived';
 import { parseProject, serializeProject } from '../adapters/persistence';
@@ -66,6 +66,7 @@ export function TopBar() {
             <div className="menu" role="menu" onClick={() => setMenu(false)}>
               <button role="menuitem" onClick={() => fileRef.current?.click()}><Upload size={14} /> Import JSON…</button>
               <button role="menuitem" onClick={exportProject}><Download size={14} /> Export JSON</button>
+              <button role="menuitem" onClick={s.loadPlatformKit}><Boxes size={14} /> Load platform-kit template</button>
               <button role="menuitem" onClick={() => setConfirmReset(true)}><RotateCcw size={14} /> Reset demo project</button>
             </div>
           )}

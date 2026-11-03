@@ -65,3 +65,41 @@ export function createStarterProject(now = STAMP): GnikProject {
     providerProfileId: 'mock-paas',
   };
 }
+
+/** Second demo: an open-source "secure AI knowledge platform" built from the platform kit. */
+export function createPlatformKitProject(now = STAMP): GnikProject {
+  const nodes: CapabilityNode[] = [
+    node('p-web', 'web_app', 'Knowledge Portal', 0, 160, 'End-user UI.'),
+    node('p-sso', 'identity_provider', 'SSO (Keycloak)', 0, 0, 'OIDC single sign-on and MFA.'),
+    node('p-apim', 'api_management', 'API Management', 300, 160, 'Keys, quotas and developer portal.'),
+    node('p-rag', 'rag_service', 'RAG Service', 600, 160, 'Retrieval-augmented answers.'),
+    node('p-mcp', 'mcp_server', 'MCP Tools Server', 600, 320, 'Exposes tools to AI agents.'),
+    node('p-vec', 'vector_store', 'Vector Index', 900, 60, 'Document embeddings.'),
+    node('p-model', 'model_endpoint', 'LLM Endpoint', 900, 200, 'Answer generation.'),
+    node('p-sql', 'sqlite', 'App Metadata DB', 900, 340, 'Lightweight relational metadata.'),
+    node('p-olap', 'analytics_db', 'Usage Analytics', 900, 480, 'DuckDB analytics on usage.'),
+    node('p-vault', 'key_vault', 'Key Vault (OpenBao)', 300, 0, 'Secrets and keys.'),
+    node('p-iac', 'iac_pipeline', 'IaC (OpenTofu)', 300, 340, 'Provisions the platform.'),
+  ];
+  const e = (s: string, t: string, relation: ArchitectureEdge['relation']): ArchitectureEdge => ({ id: `e-${s}-${t}`, source: s, target: t, relation });
+  return {
+    schemaVersion: 1,
+    id: 'project-platform-kit',
+    name: 'Secure AI Knowledge Platform',
+    description: 'Open-source platform kit: SSO, APIM, RAG, MCP, vector + SQL + analytics stores, vault and IaC.',
+    createdAt: now,
+    updatedAt: now,
+    graph: {
+      nodes,
+      edges: [
+        e('p-web', 'p-apim', 'request'), e('p-web', 'p-sso', 'depends_on'), e('p-apim', 'p-rag', 'request'),
+        e('p-apim', 'p-mcp', 'request'), e('p-rag', 'p-vec', 'reads'), e('p-rag', 'p-model', 'calls_model'),
+        e('p-mcp', 'p-sql', 'reads'), e('p-mcp', 'p-olap', 'reads'), e('p-rag', 'p-vault', 'depends_on'),
+        e('p-iac', 'p-vault', 'depends_on'),
+      ],
+    },
+    overlays: starterOverlays(now),
+    policyProfileId: 'policy-1',
+    providerProfileId: 'mock-paas',
+  };
+}

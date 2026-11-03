@@ -15,7 +15,7 @@ import type {
 import { MockPaaSAdapter } from '../adapters/MockPaaSAdapter';
 import { clearLocal, loadLocal, saveLocal } from '../adapters/persistence';
 import type { AssistantProposal } from '../adapters/assistant';
-import { createStarterProject } from '../fixtures/customerNotifications';
+import { createStarterProject, createPlatformKitProject } from '../fixtures/customerNotifications';
 import { resolveProject } from '../domain/resolver';
 
 export type Mode = 'design' | 'overlays' | 'plan';
@@ -90,6 +90,7 @@ interface State {
   redo(): void;
   replaceProject(p: GnikProject, message: string): void;
   resetDemo(): void;
+  loadPlatformKit(): void;
   applyProposal(p: AssistantProposal): void;
 
   generatePlan(): Promise<void>;
@@ -350,6 +351,10 @@ export const useStore = create<State>((set, get) => {
     resetDemo: () => {
       clearLocal();
       get().replaceProject(createStarterProject(), 'Reset to the Customer Notifications demo');
+    },
+
+    loadPlatformKit: () => {
+      get().replaceProject(createPlatformKitProject(), 'Loaded the Secure AI Knowledge Platform template');
     },
 
     applyProposal: (proposal) => {

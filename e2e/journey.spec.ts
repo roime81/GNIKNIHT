@@ -92,3 +92,11 @@ test('negative path: invalid relationship blocks the plan', async ({ page }) => 
   await expect(page.locator('.banner.error')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Deploy simulation' }).first()).toBeDisabled();
 });
+
+test('platform-kit template loads and flags insecure MCP', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'More actions' }).click();
+  await page.getByRole('menuitem', { name: /Load platform-kit template/ }).click();
+  await expect(page.getByTestId('node-RAG Service')).toBeVisible();
+  await expect(page.getByTestId('node-Key Vault (OpenBao)')).toBeVisible();
+});

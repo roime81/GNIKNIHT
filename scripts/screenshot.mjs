@@ -40,6 +40,13 @@ try {
   await page.waitForSelector('[data-testid=timeline]');
   await page.locator('.center').evaluate((e) => e.scrollTo(0, 0));
   await page.screenshot({ path: 'docs/screenshots/plan-run.png' });
+
+  await page.getByRole('button', { name: 'More actions' }).click();
+  await page.getByRole('menuitem', { name: /Load platform-kit template/ }).click();
+  await page.waitForSelector('[data-testid="node-RAG Service"]');
+  await page.getByTestId('node-MCP Tools Server').click();
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: 'docs/screenshots/platform-kit.png' });
   await browser.close();
 } finally {
   server.kill();

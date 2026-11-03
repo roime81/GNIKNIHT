@@ -35,6 +35,10 @@ GNIKNIHT is a visual-first studio for modelling an application as a **topology o
   | Key Vault | Security | openbao, vault, infisical |
   | IaC pipeline | Platform | opentofu, pulumi, ansible |
 
+  Load the ready-made **Secure AI Knowledge Platform** via the **⋯ menu → Load platform-kit template**.
+
+  ![Platform kit](docs/screenshots/platform-kit.png)
+
   Rules: public MCP servers must require auth, key vaults can't be public, production SSO requires MFA, production SQLite needs backups, and a RAG service without a vector store gets a warning.
 - **Overlays** — four demo overlays (Development, Production, Restricted Data, Budget Guardrail), plus your own. Enable/disable, reorder priority, choose targets (all, selected nodes, capability kinds) and edit validated settings. Overlays never mutate the base graph.
 - **Conflicts are explicit** — if two overlays set the same property differently, GNIKNIHT reports a conflict instead of picking a winner. Resolve it by disabling a layer or marking the higher-priority overlay as an override with a reason.
